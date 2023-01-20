@@ -1,0 +1,7 @@
+apiVersion: v2
+appVersion: latest
+description: A Dockerfile for nginx-rtmp-module + FFmpeg from source with basic settings
+  for streaming HLS. Built on Alpine Linux
+name: nginx-rtmp
+type: application
+version: 0.7.0

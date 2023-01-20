@@ -1,0 +1,24 @@
+persistence:
+  music:
+    enabled: true
+    type: pvc
+    existingClaim: music-pvc
+    mountPath: /music
+  config:
+    enabled: true
+    type: pvc
+    existingClaim: navidrome-config-pvc
+    mountPath: /data
+#service:
+#  main:
+#    type: "LoadBalancer"
+ingress:
+  main:
+    # -- Enables or disables the ingress
+    enabled: true
+
+    #ngressClassName: nginx
+    hosts:
+    - host: navidrome.aksine.lcl
+      paths:
+          - path: /

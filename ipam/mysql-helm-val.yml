@@ -1,0 +1,12 @@
+primary: 
+  # Enable persistence using Persistent Volume Claims
+  persistence: 
+    # If true, use a Persistent Volume Claim, If false, use emptyDir
+    enabled: true
+    # MySQL primary Pod security context
+    existingClaim: phpipam
+auth:
+  rootPassword: root1234
+image:
+
+  tag: 5.7.40

@@ -1,0 +1,28 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: other-ingressroute
+  annotations: 
+    kubernetes.io/ingress.class: traefik-ext
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: HostSNI(`etxea.aksine-am.com`)
+ 
+      services:
+        - name: ocvpn-wrt
+          port: 4443
+    - match: HostSNI(`theren.aksine-am.com`)
+
+      services:
+        - name: ocvpn-openconnect
+          port: 443
+    - match: HostSNI(`wheadu.aksine-am.com`)
+
+      services:
+        - name: swag
+          port: 443
+  
+  tls:
+    passthrough: true 

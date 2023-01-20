@@ -1,0 +1,33 @@
+
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - host: planka.aksine.lcl
+        paths:
+         - path: /
+
+postgresql:
+  enabled: true
+  primary:
+    persistence:
+      enabled: true
+      existingClaim: planka-db-pvc
+
+env:
+  BASE_URL: "https://planka.aksine.lcl"
+  
+persistence:
+  data:
+    enabled: true
+    existingClaim: planka-pvc
+    subPath:
+      - path: user-avatars
+        mountPath: /app/public/user-avatars
+      - path: project-background-images
+        mountPath: /app/public/project-background-images
+      - path: attachments
+    
+        mountPath: /app/public/attachments

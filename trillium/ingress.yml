@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: trillium-ingress
+  namespace: default
+ 
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: notes.aksine.local
+    http:
+          paths:
+            - pathType: Prefix
+              backend:
+                service:
+                  name: trillium-trilium-notes
+                  port:
+                    number: 8080
+              path: /
+
+
