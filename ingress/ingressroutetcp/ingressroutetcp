@@ -23,6 +23,6 @@ spec:
       services:
         - name: swag
           port: 443
-  
+
   tls:
     passthrough: true 
