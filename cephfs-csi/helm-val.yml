@@ -1,9 +1,0 @@
-storageClass:
-  fsName: cephfs
-  kernelMountOptions: aksine@455313ed-e423-446b-897d-c9b38a96601a
-
-secret:
-  create: true
-  name: csi-cephfs-secret
-  adminID: aksine
-  adminKey: AQCjLlNhAQl6DRAAIk+P4LLsKW7t/mOdojsOjQ==

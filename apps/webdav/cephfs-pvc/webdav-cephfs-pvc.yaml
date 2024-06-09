@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webdav-cephfs-pvc
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  # volumeName should be same as PV name
+  volumeName: webdav-cephfs-pv
+  storageClassName: csi-cephfs-sc
