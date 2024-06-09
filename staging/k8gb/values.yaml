@@ -1,0 +1,25 @@
+k8gb:
+  dnsZone: "blogtest.aksine-am.com"
+  # -- main zone which would contain gslb zone to delegate
+  edgeDNSZone: "aksine-am.com" # main zone which would contain gslb zone to delegate
+  # -- used for places where we need to distinguish between different Gslb instances
+  clusterGeoTag: "doh"
+  # -- comma-separated list of external gslb geo tags to pair with
+  extGslbClustersGeoTags: "aus"
+
+cloudflare:
+  # -- Enable Cloudflare provider
+  enabled: true
+  # -- Cloudflare Zone ID
+  zoneID: 45deb80a1a445f84071406f5cd3ed72a
+  # -- Configure how many DNS records to fetch per request
+  # see https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/cloudflare.md#throttling
+  dnsRecordsPerPage: 5000
+
+coredns:
+
+  serviceType: LoadBalancer # <== expose UDP DNS traffic via external load balancer
+  service:
+# clusterIP: ""
+# clusterIPs: []
+    loadBalancerIP: "10.0.0.77"

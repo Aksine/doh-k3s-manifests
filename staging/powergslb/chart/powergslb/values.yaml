@@ -1,0 +1,46 @@
+
+
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          repository: aksine/powergslb
+          tag: "latest"
+        env:
+          MYSQL_ROOT_PASSWORD: powergslb1234
+          MYSQL_USER_PASSWORD: root1234
+          MYSQL_USERNAME: powergslb
+          MYSQL_DATABASE: powergslb
+          MYSQL_HOSTNAME: powergslb-mariadb
+    initContainers:
+      wait-for-db:  
+        image: 
+          repository: ghcr.io/patrickdappollonio/wait-for
+          tag: latest
+        command:
+          - /wait-for
+        args:
+          - --host="powergslb-mariadb:3306"
+service:
+  main:
+    ports:
+      http:
+        port: 80
+
+ingress:
+  # -- Enable and configure ingress settings for the chart under this key.
+  # @default -- See values.yaml
+  main:
+    enabled: false
+
+
+
+
+mariadb:
+  enabled: false
+  architecture: standalone
+
+  primary:
+    persistence:
+      enabled: false

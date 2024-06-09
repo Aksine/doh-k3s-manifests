@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-app-pv
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 1Gi
+  storageClassName: csi-cephfs-sc
+  csi:
+    driver: cephfs.csi.ceph.com
+    nodeStageSecretRef:
+      # node stage secret name
+      name: csi-cephfs-secret
+      # node stage secret namespace where above secret is created
+      namespace: ceph-csi-cephfs
+    volumeAttributes:
+      # Required options from storageclass parameters need to be added in volumeAttributes
+      "clusterID": "455313ed-e423-446b-897d-c9b38a96601a"
+      "fsName": "cephfs"
+      "staticVolume": "true"
+      "rootPath": /volumes/kubernetes/immich
+    # volumeHandle can be anything, need not to be same
+    # as PV name or volume name. keeping same for brevity
+    volumeHandle: immich-app-pv
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem

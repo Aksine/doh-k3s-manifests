@@ -1,0 +1,102 @@
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          repository: hacdias/webdav
+          tag: latest
+            # -- environment variables.
+            # See [image docs](https://github.com/dani-garcia/vaultwarden/blob/main/.env.template) for more details.
+        envFrom:
+        - secretRef:
+            name: webdav-secret
+        # args:
+        # - --config /opt/webdav.config.yml
+        command: 
+          - /webdav 
+          - --config 
+          - /opt/webdav.config.yml
+    # initContainers:
+    #   combineconfig:  
+    #     image: 
+    #       repository: georchestra/k8s-initcontainer-envsubst
+    #       tag: latest
+    #     command: ['sh', '-c', 'for file in $(ls -A /tmp/ | grep template); do newfile=${file%".yml"}; envsubst < /tmp/$file > /opt/$newfile; done']
+
+# -- Configures service settings for the chart.
+service:
+  main:
+    loadBalancerIP: 10.0.0.76
+    enabled: true
+    type: LoadBalancer
+    ports:
+      http:
+        port: 443
+
+
+ingress:
+  # -- Enable and configure ingress settings for the chart under this key.
+  main:
+    enabled: false
+    # hosts:
+    #   - host:  webdav.aksine.lcl
+    #     paths:
+    #       - path: /
+    #         pathType: Prefix
+    #         service:
+    #           name: main
+    #           port: http
+
+configMaps:
+  conf:
+    data:
+      webdav.config.yml: |-
+        address: 0.0.0.0
+        port: 443
+        auth: true
+        tls: true
+        prefix: /
+        cert: /ssl/tls.crt
+        key: /ssl/tls.key
+        debug: true
+
+        # Default user settings (will be merged)
+        scope: /mnt
+        modify: true
+        rules: []
+        users:
+          - username: aksine
+            password: "{env}PASSWORD"
+
+# -- Configure persistence settings for the chart under this key.
+persistence:
+  cephfs:
+    enabled: true
+    existingClaim: webdav-cephfs-pvc
+    advancedMounts:
+      main:
+        main:
+          - path: /mnt/cephfs
+  cifs-4tb:
+    enabled: true
+    existingClaim: webdav-smb-pvc
+    advancedMounts:
+      main:
+        main:
+          - path: /mnt/cifs-4tb
+
+  config:
+    enabled: true
+    type: configMap
+    name: webdav-conf
+    advancedMounts:
+      main:
+        main:
+          - path: /opt/
+  ssl:
+    enabled: true
+    type: secret
+    name: aksine-lcl
+    globalMounts:
+      - path: /ssl/
+      

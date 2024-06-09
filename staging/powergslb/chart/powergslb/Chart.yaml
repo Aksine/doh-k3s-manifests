@@ -1,0 +1,19 @@
+apiVersion: v2
+name: powergslb
+description: A Helm chart for PowerGSLB
+type: application
+version: v0.11.5
+appVersion: 1.0.0
+kubeVersion: ">= 1.19.0-0"
+keywords:
+  - powergslb
+
+dependencies:
+  - name: common
+    version: 2.4.0
+    repository: https://bjw-s.github.io/helm-charts/
+
+  - name: mariadb
+    repository: oci://registry-1.docker.io/bitnamicharts/mariadb
+    version: 12.2.*
+    condition: mariadb.enabled

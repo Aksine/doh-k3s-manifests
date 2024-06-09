@@ -1,0 +1,30 @@
+controllers:
+  main:
+    strategy: Recreate
+    containers:
+      main:
+        image:
+          repository: aksine/hugo-app
+          tag: 55
+service:
+  main:
+    controller: main
+    ports:
+      http:
+        port: 80
+ingress:
+  main:
+    enabled: true
+    className: traefik-ext
+
+    hosts:
+      - host: blog.aksine-am.com
+        paths:
+          - path: /
+            service:
+              identifier: main
+              port: http
+    tls:
+      - secretName: aksine-am-com-tls
+        hosts:
+          - blog.aksine-am.com

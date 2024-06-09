@@ -1,0 +1,323 @@
+
+
+#
+# Configure the deployment
+#
+deployment:
+  # -- Enable deployment
+  enabled: true
+  # -- Deployment or DaemonSet
+  kind: Deployment
+  # -- Number of pods of the deployment (only applies when kind == Deployment)
+  replicas: 3
+
+  annotations: {}
+  # -- Additional deployment labels (e.g. for filtering deployment by custom labels)
+  labels: {}
+  # -- Additional pod annotations (e.g. for mesh injection or prometheus scraping)
+  podAnnotations: {}
+  # -- Additional Pod labels (e.g. for filtering Pod by custom labels)
+  podLabels: {}
+  # -- Additional containers (e.g. for metric offloading sidecars)
+  additionalContainers: []
+    # https://docs.datadoghq.com/developers/dogstatsd/unix_socket/?tab=host
+    # - name: socat-proxy
+    #   image: alpine/socat:1.0.5
+    #   args: ["-s", "-u", "udp-recv:8125", "unix-sendto:/socket/socket"]
+    #   volumeMounts:
+    #     - name: dsdsocket
+    #       mountPath: /socket
+  # -- Additional volumes available for use with initContainers and additionalContainers
+  additionalVolumes: []
+    # - name: dsdsocket
+    #   hostPath:
+    #     path: /var/run/statsd-exporter
+  # -- Additional initContainers (e.g. for setting file permission as shown below)
+  initContainers: []
+    # The "volume-permissions" init container is required if you run into permission issues.
+    # Related issue: https://github.com/traefik/traefik-helm-chart/issues/396
+    # - name: volume-permissions
+    #   image: busybox:latest
+    #   command: ["sh", "-c", "touch /data/acme.json; chmod -v 600 /data/acme.json"]
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     runAsGroup: 65532
+    #     runAsUser: 65532
+    #   volumeMounts:
+    #     - name: data
+    #       mountPath: /data
+  # -- Use process namespace sharing
+
+  dnsConfig: 
+    nameservers:
+      - 10.0.0.219
+    searches:
+      - aksine.lcl
+ 
+
+  
+
+
+
+# -- Create a default IngressClass for Traefik
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  # name: my-custom-class
+
+
+
+## Create an IngressRoute for the dashboard
+ingressRoute:
+  dashboard:
+    # -- Create an IngressRoute for the dashboard
+    enabled: false
+
+
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: false
+    allowExternalNameServices: true
+    allowEmptyServices: false
+    ingressClass: traefik-ext
+    namespaces: []
+
+      # - "default"
+
+  kubernetesIngress:
+    enabled: true
+    allowExternalNameServices: true
+    allowEmptyServices: false
+    ingressClass: traefik-ext
+    namespaces: []
+
+      # - "default"
+    # IP used for Kubernetes Ingress endpoints
+    publishedService:
+      enabled: false
+      # Published Kubernetes Service to copy status from. Format: namespace/servicename
+      # By default this Traefik service
+      # pathOverride: ""
+
+
+
+# -- Global command arguments to be passed to all traefik's pods
+globalArguments:
+  - "--global.checknewversion"
+  - "--global.sendanonymoususage"
+  - '--providers.kubernetesingress.ingressclass="traefik-ext"'
+
+
+ports:
+  traefik:
+    port: 9000
+    # -- Use hostPort if set.
+    # hostPort: 9000
+    #
+    # -- Use hostIP if set. If not set, Kubernetes will default to 0.0.0.0, which
+    # means it's listening on all your interfaces and all your IPs. You may want
+    # to set this value if you need traefik to listen on specific interface
+    # only.
+    # hostIP: 192.168.100.10
+
+    # Defines whether the port is exposed if service.type is LoadBalancer or
+    # NodePort.
+    #
+    # -- You SHOULD NOT expose the traefik port on production deployments.
+    # If you want to access it from outside your cluster,
+    # use `kubectl port-forward` or create a secure ingress
+    expose: false
+    # -- The exposed port for this service
+    exposedPort: 9000
+    # -- The port protocol (TCP/UDP)
+    protocol: TCP
+  web:
+    ## -- Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint it will only use this entrypoint.
+    # asDefault: true
+    port: 8000
+    # hostPort: 8000
+    # containerPort: 8000
+    expose: true
+    exposedPort: 80
+    ## -- Different target traefik port on the cluster, useful for IP type LB
+    # targetPort: 80
+    # The port protocol (TCP/UDP)
+    protocol: TCP
+    # -- Use nodeport if set. This is useful if you have configured Traefik in a
+    # LoadBalancer.
+    # nodePort: 32080
+    # Port Redirections
+    # Added in 2.2, you can make permanent redirects via entrypoints.
+    # https://docs.traefik.io/routing/entrypoints/#redirection
+    redirectTo: 
+          port: websecure
+    #
+    # Trust forwarded  headers information (X-Forwarded-*).
+    # forwardedHeaders:
+    #   trustedIPs: []
+    #   insecure: false
+    #
+    # Enable the Proxy Protocol header parsing for the entry point
+    # proxyProtocol:
+    #   trustedIPs: []
+    #   insecure: false
+  websecure:
+    ## -- Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint it will only use this entrypoint.
+    # asDefault: true
+    port: 8443
+    # hostPort: 8443
+    # containerPort: 8443
+    expose: true
+    exposedPort: 443
+    ## -- Different target traefik port on the cluster, useful for IP type LB
+    # targetPort: 80
+    ## -- The port protocol (TCP/UDP)
+    protocol: TCP
+    # nodePort: 32443
+    ## -- Specify an application protocol. This may be used as a hint for a Layer 7 load balancer.
+    # appProtocol: https
+    #
+    ## -- Enable HTTP/3 on the entrypoint
+    ## Enabling it will also enable http3 experimental feature
+    ## https://doc.traefik.io/traefik/routing/entrypoints/#http3
+    ## There are known limitations when trying to listen on same ports for
+    ## TCP & UDP (Http3). There is a workaround in this chart using dual Service.
+    ## https://github.com/kubernetes/kubernetes/issues/47249#issuecomment-587960741
+    http3:
+      enabled: false
+    # advertisedPort: 4443
+    #
+    ## -- Trust forwarded  headers information (X-Forwarded-*).
+    #forwardedHeaders:
+    #  trustedIPs: []
+    #  insecure: false
+    #
+    ## -- Enable the Proxy Protocol header parsing for the entry point
+    #proxyProtocol:
+    #  trustedIPs: []
+    #  insecure: false
+    #
+    ## Set TLS at the entrypoint
+    ## https://doc.traefik.io/traefik/routing/entrypoints/#tls
+    tls:
+      enabled: true
+      # this is the name of a TLSOption definition
+      options: ""
+      certResolver: ""
+      domains: []
+      # - main: example.com
+      #   sans:
+      #     - foo.example.com
+      #     - bar.example.com
+    #
+    # -- One can apply Middlewares on an entrypoint
+    # https://doc.traefik.io/traefik/middlewares/overview/
+    # https://doc.traefik.io/traefik/routing/entrypoints/#middlewares
+    # -- /!\ It introduces here a link between your static configuration and your dynamic configuration /!\
+    # It follows the provider naming convention: https://doc.traefik.io/traefik/providers/overview/#provider-namespace
+    # middlewares:
+    #   - namespace-name1@kubernetescrd
+    #   - namespace-name2@kubernetescrd
+    middlewares: []
+  metrics:
+    # -- When using hostNetwork, use another port to avoid conflict with node exporter:
+    # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+    port: 9100
+    # hostPort: 9100
+    # Defines whether the port is exposed if service.type is LoadBalancer or
+    # NodePort.
+    #
+    # -- You may not want to expose the metrics port on production deployments.
+    # If you want to access it from outside your cluster,
+    # use `kubectl port-forward` or create a secure ingress
+    expose: false
+    # -- The exposed port for this service
+    exposedPort: 9100
+    # -- The port protocol (TCP/UDP)
+    protocol: TCP
+
+# -- TLS Options are created as TLSOption CRDs
+# https://doc.traefik.io/traefik/https/tls/#tls-options
+# When using `labelSelector`, you'll need to set labels on tlsOption accordingly.
+# Example:
+# tlsOptions:
+#   default:
+#     labels: {}
+#     sniStrict: true
+#     preferServerCipherSuites: true
+#   customOptions:
+#     labels: {}
+#     curvePreferences:
+#       - CurveP521
+#       - CurveP384
+tlsOptions: {}
+
+# -- TLS Store are created as TLSStore CRDs. This is useful if you want to set a default certificate
+# https://doc.traefik.io/traefik/https/tls/#default-certificate
+# Example:
+# tlsStore:
+#   default:
+#     defaultCertificate:
+#       secretName: tls-cert
+
+service:
+  enabled: true
+  ## -- Single service is using `MixedProtocolLBService` feature gate.
+  ## -- When set to false, it will create two Service, one for TCP and one for UDP.
+  single: true
+  type: LoadBalancer
+  # -- Additional annotations applied to both TCP and UDP services (e.g. for cloud provider specific config)
+  annotations: {}
+  # -- Additional annotations for TCP service only
+  annotationsTCP: {}
+  # -- Additional annotations for UDP service only
+  annotationsUDP: {}
+  # -- Additional service labels (e.g. for filtering Service by custom labels)
+  labels: {}
+  # -- Additional entries here will be added to the service spec.
+  # -- Cannot contain type, selector or ports entries.
+  spec: {
+    # externalTrafficPolicy: Cluster
+    loadBalancerIP: "10.0.0.80"
+    }
+    # clusterIP: "2.3.4.5"
+  loadBalancerSourceRanges: []
+    # - 192.168.0.1/32
+    # - 172.16.0.0/16
+  ## -- Class of the load balancer implementation
+  # loadBalancerClass: service.k8s.aws/nlb
+  externalIPs: []
+    # - 1.2.3.4
+  ## One of SingleStack, PreferDualStack, or RequireDualStack.
+  # ipFamilyPolicy: SingleStack
+  ## List of IP families (e.g. IPv4 and/or IPv6).
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+  # ipFamilies:
+  #   - IPv4
+  #   - IPv6
+  ##
+  ## -- An additionnal and optional internal Service.
+  ## Same parameters as external Service
+  # internal:
+  #   type: ClusterIP
+  #   # labels: {}
+  #   # annotations: {}
+  #   # spec: {}
+  #   # loadBalancerSourceRanges: []
+  #   # externalIPs: []
+  #   # ipFamilies: [ "IPv4","IPv6" ]
+
+
+# -- Whether Role Based Access Control objects like roles and rolebindings should be created
+rbac:
+  enabled: true
+  # If set to false, installs ClusterRole and ClusterRoleBinding so Traefik can be used across namespaces.
+  # If set to true, installs Role and RoleBinding. Providers will only watch target namespace.
+  namespaced: false
+  # Enable user-facing roles
+  # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
+  # aggregateTo: [ "admin" ]
+
+

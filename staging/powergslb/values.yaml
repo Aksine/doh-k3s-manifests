@@ -1,0 +1,82 @@
+
+
+
+
+
+controllers:
+  main:
+    containers:
+      main:
+        image:
+          repository: aksine/powergslb
+          tag: "latest"
+        env:
+          MYSQL_ROOT_PASSWORD:
+                  secretKeyRef:
+                    name: powergslb-secret
+                    key: mariadb-root-password
+          MYSQL_USER_PASSWORD:
+                  secretKeyRef:
+                    name: powergslb-secret
+                    key: mariadb-password
+          MYSQL_USERNAME:
+            secretKeyRef:
+              name: powergslb-secret
+              key: username
+          MYSQL_DATABASE:
+            secretKeyRef:
+              name: powergslb-secret
+              key: database
+          MYSQL_HOSTNAME: powergslb-mariadb
+
+
+
+service:
+  main:
+    ports:
+      http:
+        port: 80
+
+  dns:
+      controller: main
+      loadBalancerIP: 10.0.0.79
+      enabled: true
+      type: LoadBalancer
+      ports:
+        dns:
+          protocol: UDP
+          port: 53
+ingress:
+  # -- Enable and configure ingress settings for the chart under this key.
+  main:
+    enabled: true
+    hosts:
+      - host: doh-powergslb.aksine.lcl
+        paths:
+          - path: /admin
+            pathType: Prefix
+            service:
+              name: main
+              port: http
+
+mariadb:
+  image:
+    debug: true
+
+  enabled: true
+  architecture: standalone
+
+  auth:
+    database: power
+    existingSecret: powergslb-secret
+
+  primary:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
+    persistence:
+      enabled: true
+      existingClaim: powergslb-pvc
+
+
