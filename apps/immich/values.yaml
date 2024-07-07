@@ -14,16 +14,10 @@ env:
     secretKeyRef:
       name: immich-db-secret
       key: postgres-password
-        
-  # TYPESENSE_ENABLED: "{{ .Values.typesense.enabled }}"
-  # TYPESENSE_API_KEY: "{{ .Values.typesense.env.TYPESENSE_API_KEY }}"
-  # TYPESENSE_HOST: '{{ printf "%s-typesense" .Release.Name }}'
-  IMMICH_WEB_URL: '{{ printf "http://%s-web:3000" .Release.Name }}'
-  IMMICH_SERVER_URL: '{{ printf "http://%s-server:3001" .Release.Name }}'
   IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
-  PUBLIC_IMMICH_SERVER_URL: https://immich.aksine.lcl
+
 image:
-  tag: v1.100.0
+  tag: v1.106.1
 
 immich:
   metrics:
@@ -53,8 +47,10 @@ postgresql:
   enabled: true
   image:
     registry: ghcr.io
-    repository: soarinferret/bitnami-postgres-pgvecto-rs
-    tag: pg14.5-v0.1.11
+    repository: kevinjil/bitnami-postgres-pgvecto-rs
+    tag: pg14.5-v0.2.1
+    # repository: tensorchord/pgvecto-rs
+    # tag: pg14-v0.2.0
   global:
     postgresql:
       auth:
@@ -78,21 +74,6 @@ redis:
   master:
     persistence:
       existingClaim: immich-app-pvc
-# typesense:
-#   enabled: true
-#   env:
-#     TYPESENSE_DATA_DIR: /tsdata
-#     TYPESENSE_API_KEY: typesense
-#   persistence:
-#     tsdata:
-#       # Enabling typesense persistence is recommended to avoid slow reindexing
-#       enabled: true
-#       existingClaim: immich-app-pvc
-#       # storageClass: storage-class
-#   image:
-#     repository: docker.io/typesense/typesense
-#     tag: 0.24.0
-#     pullPolicy: IfNotPresent
 
 # Immich components
 
@@ -112,18 +93,6 @@ server:
           paths:
             - path: "/"
       tls: []
-  persistence:
-    fanart:
-      enabled: true
-      existingClaim: immich-fanart-pvc
-    phone:
-      enabled: true
-      existingClaim: immich-phone-pvc
-microservices:
-  enabled: true
-  image:
-    repository: ghcr.io/immich-app/immich-server
-    pullPolicy: IfNotPresent
   persistence:
     fanart:
       enabled: true
