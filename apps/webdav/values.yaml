@@ -4,7 +4,7 @@ controllers:
       main:
         image:
           repository: hacdias/webdav
-          tag: latest
+          tag: v4.2
             # -- environment variables.
             # See [image docs](https://github.com/dani-garcia/vaultwarden/blob/main/.env.template) for more details.
         envFrom:
@@ -59,7 +59,7 @@ configMaps:
         prefix: /
         cert: /ssl/tls.crt
         key: /ssl/tls.key
-        debug: false
+        debug: true
 
         # Default user settings (will be merged)
         scope: /mnt
@@ -67,7 +67,7 @@ configMaps:
         rules: []
         users:
           - username: aksine
-            password: "{env}PASSWORD"
+            password: "{env}ENV_PASSWORD"
 
 # -- Configure persistence settings for the chart under this key.
 persistence:
