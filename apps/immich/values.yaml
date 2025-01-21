@@ -17,7 +17,7 @@ env:
   IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
   IMMICH_HOST: 0.0.0.0
 image:
-  tag: v1.111.0
+  tag: v1.124.2
 
 immich:
   metrics:
@@ -42,7 +42,7 @@ immich:
     #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
 # Dependencies
-
+useDeprecatedPostgresChart: true 
 postgresql:
   enabled: true
   image:
@@ -66,6 +66,7 @@ postgresql:
           CREATE EXTENSION cube;
           CREATE EXTENSION earthdistance;
           CREATE EXTENSION vectors;
+    resourcesPreset: "large"
 redis:
   enabled: true
   architecture: standalone
