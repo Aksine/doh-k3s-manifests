@@ -37,6 +37,9 @@ cloudflare:
     - hostname: guac-doh.aksine-am.com
       service: http://guac:8080
 
+    - hostname: zhaopian.aksine-am.com
+      service: http://immich-server:2283
+
     - hostname: notes.aksine-am.com
       service: http://notes.aksine.lcl
       path: /api/*
